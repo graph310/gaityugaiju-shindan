@@ -347,6 +347,26 @@ const insectQuestions = [
     category: "Q3 / 状況",
     text: "状況に近いものを選んでください",
     type: "single",
+    // 虫用選択肢
+    optionsInsect: [
+      "黒くて素早く動く虫がいる（夜中に出てくる）",
+      "軒下や壁の穴からハチが出入りしている",
+      "木くずのようなものが落ちている・白い虫がいる",
+      "ペットや体が痒い・小さく跳ねる虫を見た",
+      "ベッドや畳の隙間に黒い点がある・噛まれて猛烈に痒い",
+      "その他の虫"
+    ],
+    typesInsect: ["gokiburi","hachi","shiroari","nomi","tokojirami","other"],
+    // 獣用選択肢
+    optionsGaiju: [
+      "天井裏でゴソゴソ・カサカサ音がする",
+      "キッチンや押し入れに噛み跡・フンがある",
+      "畑や庭が荒らされている",
+      "壁や床に穴が開いている",
+      "その他の動物"
+    ],
+    typesGaiju: ["nezumi","nezumi","gaiju","gaiju","other"],
+    // わからない用（全部）
     options: [
       "黒くて素早く動く虫がいる（夜中に出てくる）",
       "軒下や壁の穴からハチが出入りしている",
@@ -467,7 +487,17 @@ function renderQ() {
   nextBtn.classList.remove('active');
 
   const labels = ['A','B','C','D','E','F','G'];
-  q.options.forEach((opt, i) => {
+
+  // Q3の場合Q1の回答で選択肢を切り替え
+  let qOptions = q.options;
+  if (q.id === 'symptom' && currentMode === 'insect') {
+    const q1ans = answers[0]; // 0=虫, 1=獣, 2=わからない
+    if (q1ans === 0) qOptions = q.optionsInsect || q.options;
+    else if (q1ans === 1) qOptions = q.optionsGaiju || q.options;
+    else qOptions = q.options;
+  }
+
+  qOptions.forEach((opt, i) => {
     const btn = document.createElement('button');
     btn.className = 'opt-btn';
     if (q.type === 'single' && answers[cur] === i) btn.classList.add('selected');
@@ -557,13 +587,22 @@ function showInsectResult() {
   let pestName = '害虫';
 
   if (q1 === 1) {
+    // Q1で獣を選んだ → 必ず害獣
     pestType = 'gaiju';
     pestName = '害獣（ネズミ・イタチ等）';
-  } else if (q3 !== undefined) {
-    const symptomInfo = insectTypes[q3];
-    if (symptomInfo) {
-      pestName = symptomInfo.name;
-      pestType = symptomInfo.type;
+  } else if (q1 === 0) {
+    // Q1で虫を選んだ → 必ず害虫、Q3で種類を特定
+    pestType = 'insect';
+    const insectNames = ['ゴキブリ','ハチ・スズメバチ','シロアリ','ノミ・ダニ','トコジラミ','害虫'];
+    pestName = (q3 !== undefined && insectNames[q3]) ? insectNames[q3] : '害虫';
+  } else {
+    // Q1でわからないを選んだ → Q3のscoreで判定
+    if (q3 !== undefined) {
+      const symptomInfo = insectTypes[q3];
+      if (symptomInfo) {
+        pestName = symptomInfo.name;
+        pestType = symptomInfo.type;
+      }
     }
   }
 
