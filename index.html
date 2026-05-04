@@ -416,6 +416,7 @@ function startQuiz(mode) {
   cur = 0;
   answers = {};
   multiSelections = [];
+  document.getElementById('hero-section').classList.add('hidden');
   document.getElementById('branch-section').classList.add('hidden');
   document.getElementById('quiz-section').classList.remove('hidden');
   window.scrollTo({top:0, behavior:'smooth'});
